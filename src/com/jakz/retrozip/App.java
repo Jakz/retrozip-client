@@ -5,32 +5,59 @@ import org.bridj.*;
 import com.jakz.retrozip.bridge.ArchiveInfo;
 import com.jakz.retrozip.bridge.EntryInfo;
 import com.jakz.retrozip.bridge.Libbox;
+import com.jakz.retrozip.ui.ArchiveEntryTable;
+import com.jakz.retrozip.ui.Mediator;
+import com.jakz.retrozip.ui.Menu;
+import com.jakz.retrozip.ui.Toolbar;
+import com.pixbits.lib.lang.Size;
 import com.pixbits.lib.lang.StringUtils;
+import com.pixbits.lib.ui.UIUtils;
+import com.pixbits.lib.ui.table.ColumnSpec;
+import com.pixbits.lib.ui.table.DataSource;
+import com.pixbits.lib.ui.table.FilterableDataSource;
+import com.pixbits.lib.ui.table.TableModel;
 
 import static org.bridj.Pointer.*;
 
+import java.awt.BorderLayout;
+import java.util.Collection;
+import java.util.List;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+
 public class App
 {
+  static ArchiveEntryTable table;
+  
   public static void main(String[] args)
   {    
-    Pointer<?> pointer = pointerToCString("C:\\Users\\Jack\\Documents\\dev\\retrozip\\projects\\msvc2017\\cli\\output.box");
+    String path = "C:\\Users\\Jack\\Documents\\dev\\retrozip\\projects\\msvc2017\\cli\\output.box";
+    ArchiveInfo archive = new ArchiveInfo(path);
     
-    Libbox l = new Libbox();
+    List<EntryInfo> entries = archive.entries();
+
+    initUI();
     
-    Pointer<?> handle = l.boxOpenArchive(pointer);
-    ArchiveInfo info = new ArchiveInfo();
+    table.refresh(entries);
+  }
+  
+  public static void initUI()
+  {
+    Mediator mediator = new Mediator();
     
-    Pointer<ArchiveInfo> info2 = getPointer(info);
+    table = new ArchiveEntryTable(mediator);
+    var panel = UIUtils.buildFillPanel(table, new Size.Int(1024, 768));
+    var frame = UIUtils.buildFrame(panel, "Entries");
     
-    l.boxFillArchiveInfo(handle, info2);
+    frame.add(new Toolbar(), BorderLayout.NORTH);
+    frame.setJMenuBar(new Menu(mediator));
+    frame.pack();
     
-    EntryInfo entry = new EntryInfo();
-    Pointer<EntryInfo> entry2 = getPointer(entry);
-    
-    System.out.println("first");
-    l.boxFillEntryInfo(handle, 1, entry2);
-    System.out.println("after");
-    
-    System.out.println("Entries: "+entry.size()+" "+entry.filteredSize()+" "+StringUtils.toHexString(entry.md5()));
+        
+    frame.exitOnClose();
+    frame.centerOnScreen();
+    frame.setVisible(true);
   }
 }

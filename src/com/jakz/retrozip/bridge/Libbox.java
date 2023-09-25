@@ -14,4 +14,7 @@ public class Libbox
   public native Pointer boxOpenArchive(Pointer name);
   public native void boxFillArchiveInfo(Pointer handle, Pointer<ArchiveInfo> info);
   public native void boxFillEntryInfo(Pointer handle, long index, Pointer<EntryInfo> info);
+  
+  
+  static Libbox lib = new Libbox();
 }
